@@ -5,22 +5,6 @@ import path from 'path';
 import url from 'url';
 import sharp from 'sharp';
 
-function convertImages(folderPath) {
-
-  // Read all files from the directory
-  readdir('images', (err, files) => {
-    if (err) {
-      console.error('Error reading directory:', err);
-      return;
-    }
-
-    // Loop through each file
-    files.forEach((file) => {
-      createRoundedCorners(inputImage, outputImage)
-    });
-  });
-}
-
 function createBookmarklets() {
   // Input and output file paths
   const inputFile = 'template.html'; // Replace with your input file path
@@ -47,7 +31,7 @@ function createBookmarklets() {
     const anchor = dom.window.document.querySelector('a');
     const site = anchor.textContent.toLocaleLowerCase();
     const fileName = site + '.png'; // Image filename
-    
+
     createRoundedCorners(fileName);
 
     // Build the full path to the file in the 'images' subfolder
@@ -55,7 +39,10 @@ function createBookmarklets() {
     const filePath = path.join(__dirname, 'images2', fileName);
 
     const base64string = imageToBase64(filePath);
+    
     line = line.replace('{{base64}}', base64string);
+
+    console.log(`${site} bookmarklet is created.`)
 
     // Write each line to the output file
     writeStream.write(line + '\n');
@@ -63,7 +50,7 @@ function createBookmarklets() {
 
   // Close the write stream when done
   rl.on('close', () => {
-    console.log('File processing completed.');
+    console.log(`COMPLETED: ${writeStream.path} file is generated sucessfully.`);
     writeStream.end();
   });
 }
@@ -73,18 +60,16 @@ function imageToBase64(filePath) {
   // Read the file as a binary buffer
   const fileBuffer = fs.readFileSync(filePath);
   // Convert the buffer to a Base64 string
-  const base64String = 'data:image/png;base64,' + fileBuffer.toString('base64');
+  const base64String = `data:image/png;base64,${fileBuffer.toString('base64')})`;
   return base64String;
 }
 
 // Function to create rounded corners
 function createRoundedCorners(fileName) {
-
   const inputImage = 'images1/' + fileName;
   const outputImage = 'images2/' + fileName;
-
   sharp(inputImage)
-    // .resize(512) // Optional: Resize the image (you can skip this step if not needed)
+    .resize(512) // Optional: Resize the image (you can skip this step if not needed)
     .composite([{
       input: Buffer.from('<svg width="512" height="512"><rect x="0" y="0" width="512" height="512" rx="70" ry="70" fill="white" /></svg>'),
       blend: 'dest-in'
