@@ -39,7 +39,7 @@ function createBookmarklets() {
     const filePath = path.join(__dirname, 'images2', fileName);
 
     const base64string = imageToBase64(filePath);
-    
+
     line = line.replace('{{base64}}', base64string);
 
     console.log(`${site} bookmarklet is created.`)
@@ -60,7 +60,7 @@ function imageToBase64(filePath) {
   // Read the file as a binary buffer
   const fileBuffer = fs.readFileSync(filePath);
   // Convert the buffer to a Base64 string
-  const base64String = `data:image/png;base64,${fileBuffer.toString('base64')})`;
+  const base64String = `data:image/png;base64,${fileBuffer.toString('base64')}`;
   return base64String;
 }
 
@@ -69,12 +69,19 @@ function createRoundedCorners(fileName) {
   const inputImage = 'images1/' + fileName;
   const outputImage = 'images2/' + fileName;
   sharp(inputImage)
-    .resize(512) // Optional: Resize the image (you can skip this step if not needed)
+    .resize(32) // Optional: Resize the image (you can skip this step if not needed)
     .composite([{
-      input: Buffer.from('<svg width="512" height="512"><rect x="0" y="0" width="512" height="512" rx="70" ry="70" fill="white" /></svg>'),
+      input: Buffer.from('<svg width="32" height="32"><rect x="0" y="0" width="32" height="32" rx="5" ry="5" fill="white" /></svg>'),
       blend: 'dest-in'
     }])
     .toFile(outputImage);
+  // sharp(inputImage)
+  //   .resize(512) // Optional: Resize the image (you can skip this step if not needed)
+  //   .composite([{
+  //     input: Buffer.from('<svg width="512" height="512"><rect x="0" y="0" width="512" height="512" rx="70" ry="70" fill="white" /></svg>'),
+  //     blend: 'dest-in'
+  //   }])
+  //   .toFile(outputImage);
 }
 
 createBookmarklets();
