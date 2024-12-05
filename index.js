@@ -29,14 +29,15 @@ function createBookmarklets() {
 
     // Find anchor element and get it's text
     const anchor = dom.window.document.querySelector('a');
-    const site = anchor.textContent.toLocaleLowerCase();
-    const fileName = site + '.png'; // Image filename
+    const site = anchor.textContent;
+    const fileName1 = `${site.toLocaleLowerCase()}-512.png`;
+    const fileName2 = `${site.toLocaleLowerCase()}-32.png`;
 
-    createRoundedCorners(fileName);
+    createRoundedCorners(fileName1, fileName2);
 
     // Build the full path to the file in the 'images' subfolder
     const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-    const filePath = path.join(__dirname, 'images2', fileName);
+    const filePath = path.join(__dirname, 'images', fileName2);
 
     const base64string = imageToBase64(filePath);
 
@@ -65,9 +66,9 @@ function imageToBase64(filePath) {
 }
 
 // Function to create rounded corners
-function createRoundedCorners(fileName) {
-  const inputImage = 'images1/' + fileName;
-  const outputImage = 'images2/' + fileName;
+function createRoundedCorners(fileName1, fileName2) {
+  const inputImage = 'images/' + fileName1;
+  const outputImage = 'images/' + fileName2;
   sharp(inputImage)
     .resize(32) // Optional: Resize the image (you can skip this step if not needed)
     .composite([{
@@ -75,13 +76,6 @@ function createRoundedCorners(fileName) {
       blend: 'dest-in'
     }])
     .toFile(outputImage);
-  // sharp(inputImage)
-  //   .resize(512) // Optional: Resize the image (you can skip this step if not needed)
-  //   .composite([{
-  //     input: Buffer.from('<svg width="512" height="512"><rect x="0" y="0" width="512" height="512" rx="70" ry="70" fill="white" /></svg>'),
-  //     blend: 'dest-in'
-  //   }])
-  //   .toFile(outputImage);
 }
 
 createBookmarklets();
