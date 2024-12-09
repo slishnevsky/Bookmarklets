@@ -10,59 +10,60 @@ function createBookmarklets() {
   const inputFile = 'template.html'; // Replace with your input file path
   const outputFile = 'bookmarklets.html'; // Replace with your output file path
 
-  // Create a read and write streams for the input and the output files
-  const readStream = fs.createReadStream(inputFile);
-  const writeStream = fs.createWriteStream(outputFile);
+  // Build the full path to the file in the 'images' subfolder
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  // Create a readline interface
-  const rl = readline.createInterface({
-    input: readStream,
-    output: process.stdout,
-    terminal: false
-  });
+  // Read the file
+  fs.readFile(inputFile, 'utf8', (err, data) => {
+    if (err) console.error('Error reading the file:', err);
 
-  // Process each line
-  rl.on('line', (line) => {
+    // Split text into lines
+    let lines = data.split(/\r?\n/);
 
-    // Create a DOM from the HTML string
-    const dom = new jsdom.JSDOM(line);
+    for (let index = 0; index < lines.length; index++) {
+      // Create a DOM from the HTML string
+      const dom = new jsdom.JSDOM(lines[index]);
 
-    // Find anchor element and get it's text
-    const anchor = dom.window.document.querySelector('a');
-    const site = anchor.textContent;
-    const fileName1 = `${site.toLocaleLowerCase()}-512.png`;
-    const fileName2 = `${site.toLocaleLowerCase()}-32.png`;
+      // Find anchor element and get it's text
+      const anchor = dom.window.document.querySelector('a');
+      const site = anchor.textContent;
+      const fileName1 = `${site.toLocaleLowerCase()}-512.png`;
+      const fileName2 = `${site.toLocaleLowerCase()}-32.png`;
 
-    createRoundedCorners(fileName1, fileName2);
+      createRoundedCorners(fileName1, fileName2);
 
-    // Build the full path to the file in the 'images' subfolder
-    const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-    const filePath = path.join(__dirname, 'images', fileName2);
+      const filePath = path.join(__dirname, 'images', fileName2);
 
-    const base64string = imageToBase64(filePath);
+      const base64string = imageToBase64(filePath);
 
-    line = line.replace('{{base64}}', base64string);
+      lines[index] = lines[index].replace('{{base64}}', base64string);
 
-    console.log(`${site} bookmarklet is created.`)
+      console.log(`${site} bookmarklet is created successfully.`)
+    }
 
-    // Write each line to the output file
-    writeStream.write(line + '\n');
-  });
+    data = lines.join('\n');
 
-  // Close the write stream when done
-  rl.on('close', () => {
-    console.log(`COMPLETED: ${writeStream.path} file is generated sucessfully.`);
-    writeStream.end();
+    // Write the text into a file named 'output.txt'
+    fs.writeFile(outputFile, data, 'utf8', (err) => {
+      if (err) console.error('Error writing to file:', err);
+      console.log('Text successfully written to file.');
+    });
   });
 }
 
-// Function to convert an image to Base64
+// Function to convert an image file to a Base64 string
 function imageToBase64(filePath) {
-  // Read the file as a binary buffer
-  const fileBuffer = fs.readFileSync(filePath);
-  // Convert the buffer to a Base64 string
-  const base64String = `data:image/png;base64,${fileBuffer.toString('base64')}`;
-  return base64String;
+  try {
+    // Read the image file synchronously
+    const imageBuffer = fs.readFileSync(filePath);
+
+    // Convert the file buffer to a Base64 string
+    const base64String = imageBuffer.toString('base64');
+
+    return `data:image/png;base64,${base64String}`;
+  } catch (error) {
+    console.error('Error reading file:', error.message);
+  }
 }
 
 // Function to create rounded corners
@@ -75,7 +76,7 @@ function createRoundedCorners(fileName1, fileName2) {
       input: Buffer.from('<svg width="32" height="32"><rect x="0" y="0" width="32" height="32" rx="5" ry="5" fill="white" /></svg>'),
       blend: 'dest-in'
     }])
-    .toFile(outputImage);
+    .toFile(outputImage)
 }
 
 createBookmarklets();
