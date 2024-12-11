@@ -1,6 +1,4 @@
 import fs from 'fs';
-import readline from 'readline';
-import jsdom from 'jsdom';
 import path from 'path';
 import url from 'url';
 import sharp from 'sharp';
@@ -21,23 +19,16 @@ function createBookmarklets() {
     let lines = data.split(/\r?\n/);
 
     for (let index = 0; index < lines.length; index++) {
-      // Create a DOM from the HTML string
-      const dom = new jsdom.JSDOM(lines[index]);
-
-      // Find anchor element and get it's text
-      const anchor = dom.window.document.querySelector('a');
-      const site = anchor.textContent;
+      // Extract the site name from the line
+      const site = lines[index].split('ICON="{{base64}}">')[1].replace('</A>', '')
       const fileName1 = `${site.toLocaleLowerCase()}-512.png`;
       const fileName2 = `${site.toLocaleLowerCase()}-32.png`;
 
       createRoundedCorners(fileName1, fileName2);
 
       const filePath = path.join(__dirname, 'images', fileName2);
-
       const base64string = imageToBase64(filePath);
-
       lines[index] = lines[index].replace('{{base64}}', base64string);
-
       console.log(`${site} bookmarklet is created successfully.`)
     }
 
@@ -46,7 +37,7 @@ function createBookmarklets() {
     // Write the text into a file named 'output.txt'
     fs.writeFile(outputFile, data, 'utf8', (err) => {
       if (err) console.error('Error writing to file:', err);
-      console.log('Text successfully written to file.');
+      console.log(`${outputFile} created successfully.`);
     });
   });
 }
@@ -80,3 +71,5 @@ function createRoundedCorners(fileName1, fileName2) {
 }
 
 createBookmarklets();
+
+// console.log(imageToBase64('d:\\Projects\\Bookmarklets\\images\\kijiji-32.png'));
